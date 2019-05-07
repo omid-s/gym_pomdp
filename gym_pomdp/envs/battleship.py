@@ -7,6 +7,7 @@ from gym.spaces import Discrete
 from gym_pomdp.envs.coord import Grid, Coord
 from gym_pomdp.envs.gui import ShipGui
 
+import time
 
 # TODO fix state
 class Compass(Enum):
@@ -64,7 +65,7 @@ class BattleGrid(Grid):
 class BattleShipEnv(Env):
     metadata = {"render.modes": ["human", "ansi"]}
 
-    def __init__(self, board_size=(5, 5), max_len=3):
+    def __init__(self, board_size=(10, 10), max_len=3):
         self.grid = BattleGrid(board_size)
         self.action_space = Discrete(self.grid.n_tiles)
         self.observation_space = Discrete(len(Obs))
@@ -72,7 +73,7 @@ class BattleShipEnv(Env):
         self._reward_range = self.action_space.n / 4.
         self._discount = 1.
         self.total_remaining = max_len - 1
-        self.max_len = max_len + 1
+        self.max_len = 5 # max_len + 1
 
     def seed(self, seed=None):
         np.random.seed(seed)
@@ -168,9 +169,10 @@ class BattleShipEnv(Env):
         bsstate = ShipState()
         self.grid.build_board()
 
-        for length in reversed(range(2, self.max_len)):
+        for length in reversed( [1,2,2,3,4]) : #reversed(range(1, self.max_len)):
             # num_ships = 1
             # for idx in range(num_ships):
+            print(length)
             while True:  # add one ship of each kind
                 ship = Ship(coord=self.grid.sample(), length=length)
                 if not self.collision(ship, self.grid, bsstate):
@@ -222,6 +224,7 @@ if __name__ == "__main__":
         ob, rw, done, info = env.step(action)
         env.render()
         t += 1
+    time.sleep(5)
     env.close()
 
     print("rw {}, t{}".format(rw, t))
